@@ -8,35 +8,42 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "./scss/themes.scss";
 // Import context
 import UserContext from "./user-context";
-// Import socket config
-import { socket } from "./service/socket";
+// Import firebase config
+import { fire } from "./firebase";
 
 function App() {
   const [userObj, setUserObj] = useState();
   const sessionItem = JSON.parse(sessionStorage.getItem("userObj"));
+  const loggedIn = fire.database().ref("loggedIn");
+  const messages = fire.database().ref("messages");
+
+  // Delete from loggedIn db
+  window.addEventListener("unload", () => {
+    loggedIn.child(sessionItem.googleId).remove();
+  });
 
   useEffect(() => {
     if (sessionItem) {
       setUserObj(sessionItem);
-      socket.emit("new-user", sessionItem.name);
+      loggedIn.child(sessionItem.googleId).set({ name: sessionItem.name });
     }
   }, []);
 
   const handleUserObj = (obj) => {
-    setUserObj(obj);
     if (obj !== null && obj !== undefined) {
       sessionStorage.setItem("userObj", JSON.stringify(obj));
-      socket.emit("new-user", obj.name);
+      loggedIn.child(obj.googleId).set({ name: obj.name });
     } else {
       sessionStorage.clear();
-      socket.emit("disconnect-manually");
+      loggedIn.child(userObj.googleId).remove();
     }
+    setUserObj(obj);
   };
 
   return (
     <>
       <UserContext.Provider value={userObj}>
-        <Main setUserObj={handleUserObj} />
+        <Main handleUserObj={handleUserObj} />
       </UserContext.Provider>
     </>
   );

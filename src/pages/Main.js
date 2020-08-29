@@ -8,28 +8,50 @@ import UserInfo from "../components/UserInfo";
 import LoggedInUsers from "../components/LoggedInUsers";
 import ChatBox from "../components/ChatBox";
 
-// Import socket config
-import { socket } from "../service/socket";
+// Import firebase config
+import { fire } from "../firebase";
 
 const Main = (props) => {
   const user = useContext(UserContext);
-  const { setUserObj } = props;
+  const { handleUserObj } = props;
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
+  const loggedIn = fire.database().ref("loggedIn");
+  const messagesFetch = fire.database().ref("messages");
 
   const handleMessage = (message) => {
     let { name, imageUrl } = user;
-    socket.emit("message", { name, message, imageUrl });
+    let lastId = messagesFetch.push().key;
+    messagesFetch
+      .child(lastId)
+      .set({ name: name, message: message, imageUrl: imageUrl });
   };
 
+  // get logged in users
   useEffect(() => {
-    socket.on("message", ({ name, message, imageUrl }) => {
-      setMessages([{ name, message, imageUrl }, ...messages]);
+    loggedIn.on("value", (el) => {
+      if (el.val()) {
+        const fetchUsers = Object.values(el.val());
+        setUsers(fetchUsers);
+      }
     });
-    socket.on("loggedin-update", (users) => {
-      setUsers(users);
+  }, []);
+
+  // get messages
+  useEffect(() => {
+    messagesFetch.on("value", (el) => {
+      const entries = Object.entries(el.val());
+      let allMessages = [];
+      entries.forEach((el) => {
+        allMessages.unshift({
+          name: el[1].name,
+          message: el[1].message,
+          imageUrl: el[1].imageUrl,
+        });
+      });
+      setMessages(allMessages, ...messages);
     });
-  });
+  }, []);
 
   return (
     <Container>
@@ -40,7 +62,7 @@ const Main = (props) => {
               <CardBody>
                 <Row>
                   <Col xs={12} md={3} className="border-right">
-                    <UserInfo setUserObj={setUserObj} user={user} />
+                    <UserInfo handleUserObj={handleUserObj} user={user} />
                     <LoggedInUsers users={users} />
                   </Col>
                   <Col xs={12} md={9}>
@@ -56,10 +78,10 @@ const Main = (props) => {
         ) : (
           <Col xs={12} className="text-center mt-5">
             <GoogleLogin
-              clientId="347289003118-u8h8hmu0g45nmpos6arbe5vttjnujnvt.apps.googleusercontent.com"
+              clientId="446853568400-0ggh2lo8v2nn3kjat44mj6sk41i5uqlr.apps.googleusercontent.com"
               buttonText="Log in"
-              onSuccess={(e) => setUserObj(e.profileObj)}
-              onFailure={() => console.log("Error w/ google OAuth")}
+              onSuccess={(e) => handleUserObj(e.profileObj)}
+              onFailure={(response) => console.log(response)}
               cookiePolicy={"single_host_origin"}
             />
           </Col>
