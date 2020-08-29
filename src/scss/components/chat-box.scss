@@ -1,0 +1,43 @@
+#chat-box {
+  height: 400px;
+  overflow-y: scroll;
+
+  .messages {
+    list-style-type: none;
+    padding: 0;
+
+    .message {
+      display: flex;
+      margin-bottom: 20px;
+      .author-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 90px;
+        img {
+          height: 40px;
+          width: 40px;
+        }
+        .message-author {
+          color: rgb(167, 167, 167);
+          font-size: 13px;
+          font-weight: 700;
+          text-align: center;
+          line-height: 13px;
+          margin-top: 5px;
+        }
+      }
+      .message-text {
+        width: 100%;
+        margin-left: 20px;
+        font-size: 15px;
+        margin-top: 5px;
+      }
+    }
+  }
+}
+
+#chat-form {
+  display: flex;
+  margin-top: 10px;
+}
