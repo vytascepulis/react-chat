@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Container, Row, Col, Card, CardBody } from "reactstrap";
 import GoogleLogin from "react-google-login";
 import UserContext from "../user-context";
@@ -8,79 +8,42 @@ import UserInfo from "../components/UserInfo";
 import LoggedInUsers from "../components/LoggedInUsers";
 import ChatBox from "../components/ChatBox";
 
+// Import socket config
+import { socket } from "../service/socket";
+
 const Main = (props) => {
   const user = useContext(UserContext);
   const { setUserObj } = props;
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  // MOCK ===========================================================================
-  const img =
-    "https://hips.hearstapps.com/digitalspyuk.cdnds.net/18/44/1540913834-sigourneyweaveravatar.jpg";
-  const users = [
-    {
-      id: 1,
-      name: "Test Name",
-    },
-    {
-      id: 2,
-      name: "Test Name 2",
-    },
-    {
-      id: 3,
-      name: "Test Name 3",
-    },
-    {
-      id: 4,
-      name: "Test Name 4",
-    },
-  ];
-
-  const messages = [
-    {
-      name: "test name",
-      msg:
-        "test msg test msasd asdas dasdas asd asd asdasdasdasdasdasdas das as  das asd asd asdasdasdasg test msg",
-      imgUrl: img,
-    },
-    {
-      name: "test name",
-      msg: "test msg test msg test msg",
-      imgUrl: img,
-    },
-    {
-      name: "test name",
-      msg: "test msg test msg test msg",
-      imgUrl: img,
-    },
-    {
-      name: "test name",
-      msg: "test msg test msg test msg",
-      imgUrl: img,
-    },
-  ];
-
-  const handleMessage = (msg) => {
-    console.log("you are: ", user.name);
-    console.log("your msg: ", msg);
-    messages.unshift({ name: user.name, msg: msg, imgUrl: user.imageUrl });
+  const handleMessage = (message) => {
+    let { name, imageUrl } = user;
+    socket.emit("message", { name, message, imageUrl });
   };
+
+  useEffect(() => {
+    socket.on("message", ({ name, message, imageUrl }) => {
+      setMessages([{ name, message, imageUrl }, ...messages]);
+    });
+    socket.on("loggedin-update", (users) => {
+      setUsers(users);
+    });
+  });
+
   return (
     <Container>
       <Row>
         {user ? (
-          <Col xs={12} className="mt-5">
+          <Col xs={12} className="px-0 px-sm-3 mt-0 mt-sm-4">
             <Card className="shadow">
               <CardBody>
-                {console.log("user context: ", user)}
                 <Row>
-                  <Col
-                    xs={3}
-                    className="border-right"
-                    style={{ minHeight: "300px" }}
-                  >
+                  <Col xs={12} md={3} className="border-right">
                     <UserInfo setUserObj={setUserObj} user={user} />
                     <LoggedInUsers users={users} />
                   </Col>
-                  <Col xs={9}>
+                  <Col xs={12} md={9}>
                     <ChatBox
                       messages={messages}
                       handleMessage={handleMessage}
@@ -91,13 +54,15 @@ const Main = (props) => {
             </Card>
           </Col>
         ) : (
-          <GoogleLogin
-            clientId="347289003118-u8h8hmu0g45nmpos6arbe5vttjnujnvt.apps.googleusercontent.com"
-            buttonText="Log in"
-            onSuccess={(e) => setUserObj(e.profileObj)}
-            onFailure={() => console.log("Error w/ google OAuth")}
-            cookiePolicy={"single_host_origin"}
-          />
+          <Col xs={12} className="text-center mt-5">
+            <GoogleLogin
+              clientId="347289003118-u8h8hmu0g45nmpos6arbe5vttjnujnvt.apps.googleusercontent.com"
+              buttonText="Log in"
+              onSuccess={(e) => setUserObj(e.profileObj)}
+              onFailure={() => console.log("Error w/ google OAuth")}
+              cookiePolicy={"single_host_origin"}
+            />
+          </Col>
         )}
       </Row>
     </Container>

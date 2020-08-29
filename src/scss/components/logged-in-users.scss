@@ -17,3 +17,20 @@
     }
   }
 }
+
+@media (max-width: 768px) {
+  #logged-in-users {
+    max-height: 60px;
+  }
+  ul {
+    display: block !important;
+  }
+  .list-group-item {
+    display: inline !important;
+    padding: 0 10px 0 0 !important;
+    border: none;
+    &:not(:last-of-type):after {
+      content: ",";
+    }
+  }
+}

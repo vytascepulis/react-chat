@@ -4,10 +4,10 @@ const LoggedInUsers = (props) => {
   const { users } = props;
   return (
     <div id="logged-in-users">
-      <p>Online</p>
+      <p>Online: {users.length}</p>
       <ul className="list-group list-group-flush">
         {users.map((el, idx) => (
-          <li key={idx} id="pop" className="list-group-item">
+          <li key={idx} className="list-group-item">
             {el.name}
           </li>
         ))}

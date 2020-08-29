@@ -19,10 +19,10 @@ const ChatBox = (props) => {
           {messages.map((el, idx) => (
             <li className="message" key={idx}>
               <div className="author-info">
-                <img src={el.imgUrl} className="rounded" />
+                <img src={el.imageUrl} className="rounded" />
                 <span className="message-author">{el.name}</span>
               </div>
-              <span className="message-text">{el.msg}</span>
+              <span className="message-text">{el.message}</span>
             </li>
           ))}
         </ul>
