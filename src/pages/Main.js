@@ -40,15 +40,18 @@ const Main = (props) => {
   // get messages
   useEffect(() => {
     messagesFetch.on("value", (el) => {
-      const entries = Object.entries(el.val());
       let allMessages = [];
-      entries.forEach((el) => {
-        allMessages.unshift({
-          name: el[1].name,
-          message: el[1].message,
-          imageUrl: el[1].imageUrl,
+      if (el.val()) {
+        const entries = Object.entries(el.val());
+
+        entries.forEach((el) => {
+          allMessages.unshift({
+            name: el[1].name,
+            message: el[1].message,
+            imageUrl: el[1].imageUrl,
+          });
         });
-      });
+      }
       setMessages(allMessages, ...messages);
     });
   }, []);
